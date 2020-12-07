@@ -1,0 +1,153 @@
+[ {
+  "id" : "default_price_unit",
+  "name" : "default_price_unit",
+  "label" : "Default price unit",
+  "required" : false,
+  "locked" : true,
+  "validation_regex" : "",
+  "allow_new_line" : false,
+  "show_emoji_picker" : false,
+  "type" : "text",
+  "default" : "person"
+}, {
+  "id" : "bb1c7ea6-1b83-2f22-9c02-937224d14d97",
+  "name" : "category_setting",
+  "label" : "Category setting",
+  "required" : false,
+  "locked" : true,
+  "occurrence" : {
+    "min" : 0,
+    "max" : null,
+    "sorting_label_field" : "6798fbf8-849d-93b1-ce23-12a6f50d532e",
+    "default" : null
+  },
+  "children" : [ {
+    "id" : "6798fbf8-849d-93b1-ce23-12a6f50d532e",
+    "name" : "category_name",
+    "label" : "Category name",
+    "required" : false,
+    "locked" : false,
+    "validation_regex" : "",
+    "allow_new_line" : false,
+    "show_emoji_picker" : false,
+    "type" : "text"
+  }, {
+    "id" : "14f363c7-f4bd-3c8c-a839-f11ae7546199",
+    "name" : "image",
+    "label" : "Image",
+    "required" : false,
+    "locked" : false,
+    "responsive" : true,
+    "resizable" : false,
+    "show_loading" : false,
+    "type" : "image",
+    "default" : {
+      "size_type" : "auto",
+      "src" : "",
+      "alt" : null
+    }
+  }, {
+    "id" : "596873e5-d495-6571-a29a-95f16d51c58a",
+    "name" : "intro",
+    "label" : "Intro",
+    "required" : false,
+    "locked" : false,
+    "type" : "richtext",
+    "default" : "<p>Some intro content for this category that will be shown on the category page</p>"
+  } ],
+  "tab" : "CONTENT",
+  "expanded" : false,
+  "type" : "group",
+  "default" : {
+    "image" : {
+      "size_type" : "auto",
+      "src" : "",
+      "alt" : null
+    },
+    "intro" : "<p>Some intro content for this category that will be shown on the category page</p>"
+  }
+}, {
+  "id" : "252a1816-17d3-16f1-c95c-d3115d7d3e00",
+  "name" : "page_links",
+  "label" : "Page links",
+  "required" : false,
+  "locked" : true,
+  "children" : [ {
+    "id" : "cb603cfa-176c-b607-86bb-9bb360cafb2f",
+    "name" : "shop_home",
+    "label" : "Shop home",
+    "required" : false,
+    "locked" : false,
+    "supported_types" : [ "EXTERNAL", "CONTENT", "FILE", "EMAIL_ADDRESS", "BLOG" ],
+    "type" : "url",
+    "default" : {
+      "type" : "CONTENT",
+      "href" : null,
+      "content_id" : 34224176087
+    }
+  }, {
+    "id" : "b4787ca0-42d3-6aaa-aab4-a0a6060a8173",
+    "name" : "product_details",
+    "label" : "Product details",
+    "required" : false,
+    "locked" : false,
+    "supported_types" : [ "EXTERNAL", "CONTENT", "FILE", "EMAIL_ADDRESS", "BLOG" ],
+    "type" : "url",
+    "default" : {
+      "type" : "CONTENT",
+      "href" : null,
+      "content_id" : 34224459718
+    }
+  }, {
+    "id" : "6c33d7e4-9fd9-e904-1398-25149783a816",
+    "name" : "category",
+    "label" : "Category",
+    "required" : false,
+    "locked" : false,
+    "supported_types" : [ "EXTERNAL", "CONTENT", "FILE", "EMAIL_ADDRESS", "BLOG" ],
+    "type" : "url",
+    "default" : {
+      "type" : "CONTENT",
+      "href" : null,
+      "content_id" : 34225116265
+    }
+  }, {
+    "id" : "cad9afcf-065d-5daf-7033-99cc7b17cce0",
+    "name" : "all_products",
+    "label" : "All products",
+    "required" : false,
+    "locked" : false,
+    "supported_types" : [ "EXTERNAL", "CONTENT", "FILE", "EMAIL_ADDRESS", "BLOG" ],
+    "type" : "url",
+    "default" : {
+      "type" : "CONTENT",
+      "href" : null,
+      "content_id" : 34224770363
+    }
+  } ],
+  "tab" : "CONTENT",
+  "expanded" : false,
+  "type" : "group",
+  "default" : {
+    "shop_home" : {
+      "type" : "CONTENT",
+      "href" : null,
+      "content_id" : 34224176087
+    },
+    "product_details" : {
+      "type" : "CONTENT",
+      "href" : null,
+      "content_id" : 34224459718
+    },
+    "category" : {
+      "type" : "CONTENT",
+      "href" : null,
+      "content_id" : 34225116265
+    },
+    "all_products" : {
+      "type" : "CONTENT",
+      "href" : null,
+      "content_id" : 34224770363
+    }
+  }
+} ]

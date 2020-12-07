@@ -1,0 +1,361 @@
+<!--
+  templateType: page
+  isAvailableForNewContent: true
+  label: BRiX - Checkout
+  screenshotPath: https://f.hubspotusercontent10.net/hubfs/358710/brix_skins/bluesteal/page_preview/Hubshop-Checkout.png
+-->
+{%- extends "./layouts/baseshop.html" -%}
+
+{%- block top -%}
+{%- include "./partials/all-products.html" -%}
+{%- if request.cookies.x -%}
+{# Bust cache, do not remove #}
+{%- endif -%}
+
+{%- if widget_data.shop_settings.features.booya -%}
+{%- set auth_is_logged_in = request.cookies.booyaTemplateToken == ("btt-" ~ ((request.cookies.booyaToken ~ "." ~ widget_data.shop_settings.booya_settings.template_token)|md5)) -%}
+{%- set can_checkout = auth_is_logged_in -%}
+{%- set auth_email = contact_without_defaults.email %}
+{%- set auth_vtoken = "BOOYA@" ~ request.cookies.booyaToken ~ "@" ~ widget_data.shop_settings.booya_settings.app_id %}
+{%- set auth_is_registered = auth_is_logged_in -%}
+{%- else -%}
+{%- set auth_is_logged_in = request.contact.is_logged_in -%}
+{%- set can_checkout = auth_is_logged_in or (contact_without_defaults.email and not contact.hs_content_membership_registered_at) -%}
+{%- set auth_email = request.contact.contact.email %}
+{%- set auth_vtoken = request.contact.contact_vid|string %}
+{%- set auth_is_registered = request.contact.contact.hs_content_membership_registered_at|bool -%}
+{%- endif -%}
+<!-- Action {{ request.query_dict.action }} -->
+{%- if request.query_dict.action == "refresh_cart" -%}
+  {%- set cart_data = [] -%}
+  {%- set ids = request.query_dict.ids|split(",") %}
+  {%- set tokenKey = can_checkout ? country_setting.token_key|default(widget_data.shop_settings.token_key, True) : "" -%}
+  {%- for product in all_products -%}
+    {%- if ids is containing product.id|string -%}
+      {%- set tokenRaw = ["PRODUCT", auth_vtoken, auth_email, product.id|string, product.price|string, product.name|replace("|", " "), unixtimestamp()|string]|join("|") -%}
+      {%- set signature = can_checkout ? (((tokenKey|md5) ~ (tokenKey ~ tokenRaw ~ tokenKey)|md5 ~ (tokenKey|md5))|md5) : "NO_SIGNATURE" -%}
+      {%- do cart_data.append({
+        id: product.id,
+        name: product.name,
+        image: product.image,
+        price: product.price,
+        token: tokenRaw ~ "|" ~ signature,
+      }) -%}
+    {%- endif -%}
+  {%- endfor -%}
+  {%- set endtag = "data-end-8aaed7c5-85cd-4a8d-bf6c-ee739fa84751-" ~ unixtimestamp() -%}
+  {%- set tokenKey = "" -%}
+  <script type="application/json" data-call-result="{{ endtag }}">{{ cart_data|tojson }}</script><!-- {{ endtag }} -->
+{%- endif -%}
+
+{%- endblock top -%}
+
+{% block body_classes %}header--inverted page--checkout booya--protected{% endblock body_classes %}
+
+{%- block body_top -%}
+  {%- if widget_data.shop_settings.features.booya -%}
+    <div id="booya-wrapper">
+      <div class="lds-ring"><div></div><div></div><div></div><div></div></div>
+    </div>
+    {%- if widget_data.shop_settings.booya_settings.load_booya_assets -%}
+      {{ require_css("https://cdn.jsdelivr.net/npm/@inboundlabs/booya-ui@0.2.4/dist/css/booya.min.css") }}
+      {{ require_js("https://cdn.jsdelivr.net/npm/@inboundlabs/booya-ui@0.2.4/dist/js/booya.min.js") }}
+    {%- endif -%}
+    {{ require_js(get_asset_url('../js/booya.js')) }}
+  {%- endif -%}
+{%- endblock body_top -%}
+
+{%- block body -%}
+{%- image_src "body_background" src="https://www.hubshop.co/hubfs/hero.jpg", export_to_template_context=True, label="Body background" -%}
+
+<main class="body-container-wrapper">
+  <div class="flex-image checkout__container" style="background-image: url('{{ widget_data.body_background.src }}')">
+    <div class="content-wrapper checkout__wrapper">
+      <div class="checkout__body">
+        <div class="checkout__empty">
+          {% widget_block rich_text "content_cart_empty" overrideable=True, label='Content: Cart empty'  %}
+            {% widget_attribute "html" %}
+            <h3>Your shopping cart is empty</h3>
+            <p><a href="{{ widget_data.shop_settings.page_links.shop_home.href }}">Return to our shop</a></p>
+            {% end_widget_attribute %}
+          {% end_widget_block %}
+        </div>
+        <div class="checkout__form">
+          <h3>Contact information</h3>
+          {% form
+            form_to_use='{{ widget_data.shop_settings.contact_form.form_id }}',
+            no_title=True,
+            follow_up_type_simple='{{ widget_data.shop_settings.contact_form.follow_up_type_simple }}',
+            simple_email_for_live_id='{{ widget_data.shop_settings.contact_form.simple_email_for_live_id }}',
+            follow_up_type_automation='{{ widget_data.shop_settings.contact_form.follow_up_type_automation }}',
+            form_follow_ups_workflow_id='{{ widget_data.shop_settings.contact_form.form_follow_ups_workflow_id }}',
+            response_response_type='{{ widget_data.shop_settings.contact_form.response_type }}',
+            response_redirect_id='{{ widget_data.shop_settings.contact_form.redirect_id }}',
+            response_redirect_url='{{ widget_data.shop_settings.contact_form.redirect_url }}',
+            response_message='{{ widget_data.shop_settings.contact_form.message }}',
+            notifications_are_overridden='{{ widget_data.shop_settings.contact_form.notifications_are_overridden }}',
+            notifications_override_email_addresses='{{ widget_data.shop_settings.contact_form.notifications_override_email_addresses }}'
+            gotowebinar_webinar_key='{{ widget_data.shop_settings.contact_form.gotowebinar_webinar_key }}'
+            sfdc_campaign='{{ widget_data.shop_settings.contact_form.sfdc_campaign }}',
+            overrideable=False
+          %}
+          <div class="checkout__form__switch-signin">
+            <p>Already have an account? <a href="#">Click here</a> to sign in.</p>
+          </div>
+        </div>
+        <div class="checkout__signin">
+          {% widget_block rich_text "content_sign_in" overrideable=True, label='Content: Sign in prompt'  %}
+            {% widget_attribute "html" %}
+            <h3>Sign in</h3>
+            <p class="checkout__signin__note">Your email address has been used on our site before, please sign in so that we can record this transaction under your account. (Not your account? Please <a class="checkout__signout" href="/_hcms/mem/logout?redirect_url={{ content.absolute_url|urlencode }}">click here</a> to refill the checkout form with different email address)</p>
+            {% end_widget_attribute %}
+          {% end_widget_block %}
+          {%- if not request.contact.is_logged_in -%}
+            {%- member_login "member_login"
+              email_label= "Email",
+              password_label= "Password",
+              remember_me_label= "Remember Me",
+              submit_button_text= "Sign in",
+              reset_password_text= "Forgot your password?"
+            -%}
+          {%- endif -%}
+        </div>
+        <div class="checkout__payment" data-api-url="{{ widget_data.shop_settings.api_url }}" data-thank-you-url="{{ widget_data.shop_settings.page_links.thank_you.href }}" data-stripe-key="{{ widget_data.shop_settings.stripe_public_key }}">
+          {% widget_block rich_text "content_payment" overrideable=True, label='Content: Payment'  %}
+            {% widget_attribute "html" %}
+              <h3>Payment</h3>
+              <p>
+                Thank you for shopping on our site {{ contact.firstname }} {{ contact.lastname }} ({{ contact.email }})! Please pay with your credit card.
+              </p>
+              {%- if request.contact.is_logged_in -%}
+              <p>
+                (Not your account? Please <a class="checkout__signout" href="/_hcms/mem/logout?redirect_url={{ content.absolute_url|urlencode }}">click here</a> to sign out and checkout again)
+              </p>
+              {%- endif -%}
+            {% end_widget_attribute %}
+          {% end_widget_block %}
+          <div class="checkbox__payment__gateway"></div>
+          <p class="checkout__error"></p>
+          <button class="checkout__pay-button">Pay</button>
+        </div>
+      </div>
+      <div class="shopping-cart--inline shopping-cart--refresh">
+        {%- include "./partials/shopping-cart.html" -%}
+        <p class="checkout__total shopping-cart__footer">Total: <span class="shopping-cart__total_price" data-currency-format="{{ 42|format_currency }}"></span></p>
+      </div>
+    </div>
+  </div>
+
+  {%- module "category_slider" path="../modules/category-slider", label="Category slider", overrideable=False -%}
+</main>
+
+<script>
+window.__booyaAuthCheck = function() {
+  return !!"{{ auth_email }}";
+};
+</script>
+{{ require_js("https://js.stripe.com/v3/", "footer") }}
+{%- require_js -%}
+<script>
+jQuery(document).ready(function() {
+  var contactEmail = "{{ auth_email }}";
+  var isMembershipRegistered = {{ auth_is_registered ? "true" : "false" }};
+  var isLoggedIn = {{ auth_is_logged_in ? "true" : "false" }};
+  var withBooya = {{ widget_data.shop_settings.features.booya ? "true" : "false" }};
+
+  function signOut() {
+    _hsp.push(['revokeCookieConsent']);
+    sessionStorage.removeItem("hubShopCheckoutInfo");
+    if (withBooya) {
+      booya.ready(function() {
+        booya.logOut();
+      });
+    } else {
+      $.ajax({
+        url: "/_hcms/mem/logout",
+        dataType: "text"
+      }).done(function() {
+        location.href = location.pathname + "?t=" + Math.random();
+      });
+    }
+  }
+  if (withBooya) {
+    booya.ready(function() {
+      var checkUser = function() {
+        if (contactEmail && !isLoggedIn) {
+          signOut();
+          return;
+        }
+        if (!contactEmail) {
+          $('body').removeClass('hubshop--booya-authenticated');
+        }
+        if (!contactEmail && !sessionStorage.booyaPendingTracking) {
+          sessionStorage.setItem('booyaPendingTracking', true);
+          location.href = location.pathname + "?t=" + Math.random();
+        } else {
+          if (!contactEmail && sessionStorage.booyaTrackingTimestamp) {
+            if ((new Date()).getTime() - parseInt(sessionStorage.booyaTrackingTimestamp) < 15000) {
+              setTimeout(function() {
+                location.href = location.pathname + "?t=" + Math.random();
+              }, 1000);
+            } else {
+              signOut();
+            }
+            return;
+          }
+        }
+      };
+      if (window.user) {
+        checkUser();
+      } else {
+        booya.on(booya.events.IDENTIFY_SUCCESS, checkUser);
+      }
+    });
+  }
+
+  var checkoutFormId;
+  window.addEventListener('message', function(event) {
+    if (event.data.type !== 'hsFormCallback') {
+      return;
+    }
+    if (event.data.eventName === 'onFormReady') {
+      checkoutFormId = checkoutFormId || ($(".checkout__form form").data("form-id") || "").toLowerCase();
+      if (checkoutFormId) {
+        $(".checkout__form__switch-signin").remove().insertAfter(".checkout__form form .hs_email");
+      }
+    } else if (event.data.eventName === 'onFormSubmit' && event.data.id.toLowerCase() === checkoutFormId) {
+      event.data.data.forEach(function(entry) {
+        if (entry.name === "email") {
+          sessionStorage.setItem("hubShopCheckoutInfo", JSON.stringify({
+            email: entry.value,
+            timestamp: (new Date()).getTime()
+          }));
+          location.href = location.pathname + "?t=" + Math.random();
+        }
+      });
+    }
+  });
+
+  var checkoutInfo;
+  try {
+    checkoutInfo = JSON.parse(sessionStorage.getItem("hubShopCheckoutInfo"));
+  } catch (e) {}
+  if (checkoutInfo && checkoutInfo.email.toLowerCase() !== contactEmail.toLowerCase() && (checkoutInfo.timestamp > (new Date()).getTime() - 15000)) {
+    $(".checkout__form form").remove();
+    setTimeout(function() {
+      location.href = location.pathname + "?t=" + Math.random();
+    }, 1000);
+    return;
+  }
+  if ($("#hs-membership-form").length) {
+    $("#hs-membership-form").attr("action", "/_hcms/mem/login?redirect_url=" + location.pathname);
+    $("#hs_login_reset").attr("href", "/_hcms/mem/reset/request?redirect_url=" + location.pathname)
+    $("#hs-membership-form [name=email]").val(contactEmail).change();
+    $("#hs-membership-form [name=redirect_url]").val(location.pathname);
+    $.ajax({
+      url: "/_hcms/mem/login",
+      dataType: "text"
+    }).done(function(resp) {
+      var m = /<input [^>]+["']csrf_token["'][^>]+value=["']([^'"]+)/i.exec(resp);
+      if (m) {
+        $("#hs-membership-form [name=csrf_token]").val(m[1]);
+      }
+    });
+  }
+  if (isLoggedIn) {
+    sessionStorage.removeItem("hubShopCheckoutInfo");
+  }
+
+  if (window.__ShoppingCart.isEmpty()) {
+    $(".checkout__empty").show();
+  } else if (isLoggedIn || (contactEmail && checkoutInfo && !isMembershipRegistered)) {
+    $(".checkout__payment").show();
+    var stripe = Stripe($(".checkout__payment").data("stripe-key"));
+    var elements = stripe.elements();
+    var card = elements.create("card");
+    card.mount($(".checkbox__payment__gateway")[0]);
+    var cardComplete = false;
+    card.on("change", function(e) {
+      $(".checkout__error").text(e.error && e.error.message || "");
+      cardComplete = e.complete;
+    });
+    var submitting = false;
+    $(".checkout__pay-button").click(function(e) {
+      e.preventDefault();
+      if (submitting) {
+        return;
+      }
+      if (!cardComplete) {
+        $(".checkout__error").text("Please complete your card.");
+        card.focus();
+        return;
+      }
+      submitting = true;
+      var button = $(this);
+      $(".checkout__error").text("");
+      button.text("Please wait...").attr("disabled", "disabled");
+
+      function setPayError(message) {
+        $(".checkout__error").text(message);
+        submitting = false;
+        button.text("Pay").removeAttr("disabled");
+      }
+      window.__ShoppingCart.getPaymentRequest().pipe(function(req) {
+        return $.ajax({
+          url: $(".checkout__payment").data("api-url"),
+          type: "post",
+          contentType: "application/json",
+          data: JSON.stringify(req)
+        });
+      }).pipe(function(resp) {
+        stripe.confirmCardPayment(resp.client_secret, {
+          payment_method: { card: card }
+        }).then(function(result) {
+          if (result.error) {
+            setPayError("Sorry, we failed to complete your payment: " + result.error.message);
+          } else {
+            if (result.paymentIntent.status === 'succeeded') {
+              sessionStorage.removeItem("hubShopCheckoutInfo");
+              window.__ShoppingCart.clear();
+              location.href = $(".checkout__payment").data("thank-you-url");
+            } else {
+              console.warn(result);
+              setPayError("Sorry, we failed to complete your payment due to unknown reason, please contact us to resolve the issue.");
+            }
+          }
+        }).catch(function(e) {
+          console.error(e);
+          setPayError("Sorry, we failed to complete your payment due to unknown reason, please try again later.");
+        });
+      }, function(e) {
+        console.error(e);
+        setPayError("Sorry, we failed to complete your payment due to unknown reason, please try again later.");
+      });
+    });
+  } else if (isMembershipRegistered) {
+    $(".checkout__signin__note, .checkout__signin").show();
+  } else {
+    $(".checkout__form").show();
+  }
+  $(document).on("click", ".checkout__form__switch-signin a", function(e) {
+    e.preventDefault();
+    $(".checkout__form").hide();
+    $(".checkout__signin").show();
+  });
+  $(".checkout__signout").click(function(e) {
+    e.preventDefault();
+    _hsp.push(['revokeCookieConsent']);
+    sessionStorage.removeItem("hubShopCheckoutInfo");
+    $.ajax({
+      url: "/_hcms/mem/logout",
+      dataType: "text"
+    }).done(function() {
+      location.href = location.pathname + "?t=" + Math.random();
+    });
+  });
+});
+</script>
+{%- end_require_js -%}
+{%- endblock body -%}
+
+{%- block cart -%}{%- endblock cart -%}

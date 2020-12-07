@@ -1,0 +1,12 @@
+.footer {
+  background-color: #F8FAFC;
+  text-align: center;
+}
+
+.footer__container.content-wrapper {
+  padding: 3rem 0;
+}
+
+.footer__copyright {
+  margin: 0.5rem 0;
+}

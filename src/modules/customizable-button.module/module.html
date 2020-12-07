@@ -1,0 +1,18 @@
+{% set href = module.link.url.href %}
+{% if module.link.url.type is equalto "EMAIL_ADDRESS" %}
+  {% set href = "mailto:" + href %}
+{% endif %}
+{% set rel = [] %}
+{% if module.link.no_follow %}
+  {% do rel.append("nofollow") %}
+{% endif %}
+{% if module.link.open_in_new_tab %}
+  {% do rel.append("noopener") %}
+{% endif %}
+
+<a class="button" href="{{ href }}" style="background-color: rgba({{ module.button_bg.color|convert_rgb }}, {{ module.button_bg.opacity / 100 }}); color: rgba({{ module.button_text_color.color|convert_rgb }}, {{ module.button_text_color.opacity / 100 }});"
+{% if module.link.open_in_new_tab %}target="_blank"{% endif %}
+{% if rel %}rel="{{ rel|join(' ') }}"{% endif %}
+>
+  {{ module.button_text }}
+</a>

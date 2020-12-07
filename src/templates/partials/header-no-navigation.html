@@ -1,0 +1,19 @@
+<!--
+  templateType: global_partial
+  label: Header no navigation
+-->
+<header class="header header--no-navigation">
+  <div class="header__container content-wrapper">
+    <div class="header__logo">
+      {% module 'site_logo' path='@hubspot/logo',
+        img={
+          'alt': 'LOGO',
+          'size_type': 'auto',
+          'src': 'https://f.hubspotusercontent10.net/hubfs/358710/brix_skins/{{ theme.skin.skin_name }}/logo.svg',
+          'width': 176,
+          'height': 66,
+          'override_inherited_src' : true
+        } %}
+    </div>
+  </div>
+</header>
